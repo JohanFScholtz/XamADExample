@@ -26,9 +26,6 @@ namespace UserDetailsClient.Droid
 		
 		public static void UpdateIdValues()
 		{
-			global::Microsoft.Identity.Client.Resource.Id.agentWebView = global::UserDetailsClient.Droid.Resource.Id.agentWebView;
-			global::Microsoft.Identity.Client.Resource.Layout.WebAuthenticationBroker = global::UserDetailsClient.Droid.Resource.Layout.WebAuthenticationBroker;
-			global::Microsoft.Identity.Client.Resource.String.ApplicationName = global::UserDetailsClient.Droid.Resource.String.ApplicationName;
 			global::Xamarin.Forms.Platform.Android.Resource.Attribute.actionBarSize = global::UserDetailsClient.Droid.Resource.Attribute.actionBarSize;
 		}
 		
@@ -1919,9 +1916,6 @@ namespace UserDetailsClient.Droid
 			// aapt resource value: 0x7f0b003b
 			public const int activity_chooser_view_content = 2131427387;
 			
-			// aapt resource value: 0x7f0b0081
-			public const int agentWebView = 2131427457;
-			
 			// aapt resource value: 0x7f0b0045
 			public const int alertTitle = 2131427397;
 			
@@ -2449,9 +2443,6 @@ namespace UserDetailsClient.Droid
 			// aapt resource value: 0x7f03002f
 			public const int support_simple_spinner_dropdown_item = 2130903087;
 			
-			// aapt resource value: 0x7f030030
-			public const int WebAuthenticationBroker = 2130903088;
-			
 			static Layout()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -2464,9 +2455,6 @@ namespace UserDetailsClient.Droid
 		
 		public partial class String
 		{
-			
-			// aapt resource value: 0x7f05001e
-			public const int ApplicationName = 2131034142;
 			
 			// aapt resource value: 0x7f05000b
 			public const int abc_action_bar_home_description = 2131034123;

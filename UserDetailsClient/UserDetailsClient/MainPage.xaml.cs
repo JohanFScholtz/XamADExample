@@ -14,19 +14,18 @@ namespace UserDetailsClient
 {
     public partial class MainPage : ContentPage
     {
-        public IPlatformParameters platformParameters { get; set; }
         public MainPage()
         {
             InitializeComponent();
         }
         protected override async void OnAppearing()
         {
-            App.PCA.PlatformParameters = platformParameters;
             // let's see if we have a user in our belly already
             try
             {
-                AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes);
-                RefreshUserData(ar.Token);
+                IUser user = App.PCA.Users.FirstOrDefault();
+                AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, user);
+                RefreshUserData(ar.AccessToken);
                 btnSignInSignOut.Text = "Sign out";
             }
             catch
@@ -40,14 +39,14 @@ namespace UserDetailsClient
             if (btnSignInSignOut.Text == "Sign in")
             {
                 AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes);
-                RefreshUserData(ar.Token);
+                RefreshUserData(ar.AccessToken);
                 btnSignInSignOut.Text = "Sign out";
             }
             else
             {
                 foreach (var user in App.PCA.Users)
                 {
-                    user.SignOut();
+                    App.PCA.Remove(user);
                 }
                 slUser.IsVisible = false;
                 btnSignInSignOut.Text = "Sign in";
@@ -65,7 +64,7 @@ namespace UserDetailsClient
             if (response.IsSuccessStatusCode)
             {
                 JObject user = JObject.Parse(responseString);
-
+                
                 slUser.IsVisible = true;
                 lblDisplayName.Text = user["displayName"].ToString();
                 lblGivenName.Text = user["givenName"].ToString();
@@ -75,12 +74,11 @@ namespace UserDetailsClient
 
                 // just in case
                 btnSignInSignOut.Text = "Sign out";
-
                
             }
             else
             {
-                DisplayAlert("Something went wrong with the API call", responseString, "Dismiss");
+                await DisplayAlert("Something went wrong with the API call", responseString, "Dismiss");
             }
         }
     }
