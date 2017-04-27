@@ -56,7 +56,7 @@ namespace UserDetailsClient
         async void EditProfile(object sender, EventArgs e)
         {
             // Call EditProfile PublicClientApp to invoke EditProfile UI
-            AuthenticationResult ar  = await App.PCAEditProfile.AcquireTokenAsync(App.Scopes);
+            AuthenticationResult ar  = await App.PCA.AcquireTokenAsync(App.Scopes, App.PCA.Users.First(), UIBehavior.Consent, string.Empty, null, App.AuthorityEditProfile);
             RefreshUserData(ar.IdToken);
         }
 
