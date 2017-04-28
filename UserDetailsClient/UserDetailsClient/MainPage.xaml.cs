@@ -21,6 +21,8 @@ namespace UserDetailsClient
         }
         protected override async void OnAppearing()
         {
+            UpdateSignInState(false);
+
             // let's see if we have a user in our belly already
             try
             {
@@ -28,13 +30,17 @@ namespace UserDetailsClient
                 {
                     AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, App.PCA.Users.First());
                     UpdateUserInfo(ar.IdToken);
-                    btnSignInSignOut.Text = "Sign out";
+                    UpdateSignInState(true);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                // TODO: Only do this if exception is MSAL exception
+                // Ignore Cancels and ignore interaction required.
+                await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
+
                 // doesn't matter, we go in interactive more
-                btnSignInSignOut.Text = "Sign in";
+                UpdateSignInState(false);
             }
         }
         async void OnSignInSignOut(object sender, EventArgs e)
@@ -43,11 +49,9 @@ namespace UserDetailsClient
             {
                 if (btnSignInSignOut.Text == "Sign in")
                 {
-                    //TODO: Should be able to use this overload
-                    //AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.UiParent);
-                    AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.PCA.Users.FirstOrDefault(), UIBehavior.Consent, string.Empty, null, App.Authority, App.UiParent);
+                    AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.UiParent);
                     UpdateUserInfo(ar.IdToken);
-                    btnSignInSignOut.Text = "Sign out";
+                    UpdateSignInState(true);
                 }
                 else
                 {
@@ -55,40 +59,63 @@ namespace UserDetailsClient
                     {
                         App.PCA.Remove(user);
                     }
-                    slUser.IsVisible = false;
-                    btnSignInSignOut.Text = "Sign in";
+                    UpdateSignInState(false);
                 }
             }
             catch(Exception ex)
             {
-                await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
+                // Password reset
+                if (ex.Message.Contains("AADB2C90118"))
+                {
+                    OnPasswordReset();
+                }
+                else
+                {
+                    await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
+                }
             }
         }
         public void UpdateUserInfo(string idToken)
         {
-            /*
-            //TODO: Validate the token
-            // Extract user info from id_token
-            var jwt = JwtSecurityToken(idToken);   
-            slUser.IsVisible = true;
-            lblDisplayName.Text = jwt.Claims.FirstOrDefault("displayName")?.ToString();
-            lblGivenName.Text = jwt.Claims.FirstOrDefault("givenName")?.ToString();
-            lblId.Text = jwt.Claims.FirstOrDefault("id")?.ToString();               
-            lblSurname.Text = jwt.Claims.FirstOrDefault("surname")?.ToString();
-            lblUserPrincipalName.Text = jwt.Claims.FirstOrDefault("userPrincipalName")?.ToString();
-            */
-
+            JObject user = ParseIdToken(idToken);
+            lblDisplayName.Text = user["displayName"]?.ToString();
+            lblGivenName.Text = user["givenName"]?.ToString();
+            lblId.Text = user["oid"]?.ToString();               
+            lblSurname.Text = user["surname"]?.ToString();
+            lblUserPrincipalName.Text = user["identityProvider"]?.ToString();
         }
-        public async void CallApi(string authToken)
+
+        JObject ParseIdToken(string idToken)
         {
-            //get data from API
+            // Get the piece with actual user info
+            idToken = idToken.Split('.')[1];
+
+            // Ensure it's the proper length for decode
+            // TODO: Figure out whether B2C should do this automatically
+            idToken = idToken.PadRight(idToken.Length + (idToken.Length % 4), '=');
+
+            // Decode
+            var byteArray = Convert.FromBase64String(idToken);
+            var jsonString = UTF8Encoding.UTF8.GetString(byteArray, 0, byteArray.Count());
+            
+            // Parse
+            return JObject.Parse(jsonString);
+        }
+        async void OnCallApi(object sender, EventArgs e)
+        {
+            // TODO: Confirm if need to handle fail and call Interactive...
+            AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, App.PCA.Users.FirstOrDefault());
+            string token = ar.AccessToken;
+
+            // Get data from API
             HttpClient client = new HttpClient();
             HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Get, App.ApiEndpoint);
-            message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
+            message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.SendAsync(message);
             string responseString = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
+                // TODO: Switch to update UI rather than a popup
                 await DisplayAlert($"Response from API {App.ApiEndpoint}", responseString, "Dismiss");
 
             }
@@ -98,11 +125,42 @@ namespace UserDetailsClient
             }
         }
 
-        async void EditProfile(object sender, EventArgs e)
+        async void OnEditProfile(object sender, EventArgs e)
         {
-            // Call EditProfile PublicClientApp to invoke EditProfile UI
-            AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.PCA.Users.First(), UIBehavior.Consent, string.Empty, null, App.AuthorityEditProfile, App.UiParent);
-            UpdateUserInfo(ar.IdToken);
+            try
+            {
+                // TODO: Figure out why
+                // 1. This is not doing SSO
+                // 2. This is crashing after completion of Edit Profile
+                AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.PCA.Users.FirstOrDefault(), UIBehavior.SelectAccount, string.Empty, null, App.AuthorityEditProfile, App.UiParent);
+                UpdateUserInfo(ar.IdToken);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
+            }
+        }
+        async void OnPasswordReset()
+        {
+            try
+            {
+                // TODO: Align with Edit Profile once it's fixed
+                // TODO: Decide on whether we want to UpdateSignInState or not
+                AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.PCA.Users.FirstOrDefault(), UIBehavior.SelectAccount, string.Empty, null, App.AuthorityPasswordReset, App.UiParent);
+                UpdateUserInfo(ar.IdToken);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
+            }
+        }
+
+        void UpdateSignInState(bool isSignedIn)
+        {
+            btnSignInSignOut.Text = isSignedIn ? "Sign out" : "Sign in";
+            btnEditProfile.IsVisible = isSignedIn;
+            btnCallApi.IsVisible = isSignedIn;
+            slUser.IsVisible = isSignedIn;
         }
     }
 

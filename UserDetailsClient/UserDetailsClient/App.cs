@@ -14,12 +14,14 @@ namespace UserDetailsClient
         
         // Azure AD B2C Coordinates
         public static string ClientID = "90c0fe63-bcf2-44d5-8fb7-b8bbc0b29dc6";
-        public static string PolicySignUpSignIn = "b2c_1_susi";
+        public static string PolicySignUpSignIn = "b2c_1_susi_light";
         public static string PolicyEditProfile = "b2c_1_edit_profile";
+        public static string PolicyResetPassword = "b2c_1_reset";
 
         public static string AuthorityBase = "https://login.microsoftonline.com/tfp/fabrikamb2c.onmicrosoft.com/";
         public static string Authority = $"{AuthorityBase}{PolicySignUpSignIn}";
         public static string AuthorityEditProfile = $"{AuthorityBase}{PolicyEditProfile}";
+        public static string AuthorityPasswordReset = $"{AuthorityBase}{PolicyResetPassword}";
 
         public static string[] Scopes = { "https://fabrikamb2c.onmicrosoft.com/demoapi/demo.read" };
         public static string ApiEndpoint = "https://aadb2cplayground.azurewebsites.net/api/Tasks";
