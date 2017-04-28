@@ -11,8 +11,19 @@ namespace UserDetailsClient
     public class App : Application
     {
         public static PublicClientApplication PCA = null;
-        public static string ClientID = "a7d8cef0-4145-49b2-a91d-95c54051fa3f";
-        public static string[] Scopes = { "User.Read" };
+        
+        // Azure AD B2C Coordinates
+        public static string ClientID = "90c0fe63-bcf2-44d5-8fb7-b8bbc0b29dc6";
+        public static string PolicySignUpSignIn = "b2c_1_susi";
+        public static string PolicyEditProfile = "b2c_1_edit_profile";
+
+        public static string AuthorityBase = "https://login.microsoftonline.com/tfp/fabrikamb2c.onmicrosoft.com/";
+        public static string Authority = $"{AuthorityBase}{PolicySignUpSignIn}";
+        public static string AuthorityEditProfile = $"{AuthorityBase}{PolicyEditProfile}";
+
+        public static string[] Scopes = { "https://fabrikamb2c.onmicrosoft.com/demoapi/demo.read" };
+        public static string ApiEndpoint = "https://aadb2cplayground.azurewebsites.net/api/Tasks";
+
         public static string Username = string.Empty;
 
         public static UIParent UiParent = null;
@@ -22,9 +33,9 @@ namespace UserDetailsClient
         public App()
         {
             // default redirectURI; each platform specific project will have to override it with its own
-            PCA = new PublicClientApplication(ClientID);
+            PCA = new PublicClientApplication(ClientID, Authority);
                         
-            MainPage = new NavigationPage(new UserDetailsClient.MainPage());        
+            MainPage = new NavigationPage(new MainPage());        
         }
 
         protected override void OnStart()

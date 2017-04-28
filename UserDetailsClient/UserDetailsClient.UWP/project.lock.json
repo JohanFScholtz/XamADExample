@@ -12487,7 +12487,7 @@
       ]
     },
     "Microsoft.Identity.Client/1.1.0-alpha0252": {
-      "sha512": "SHVaKaMKunbmww8bxd8DLLSGYGv987lGizoVrIj3seMmlQtXd58rHj4BW3i/VCoFipBunR6bWyNGfIlSpod/QQ==",
+      "sha512": "4D3k2x/N0UCViHxj+uJ1AXN4qwweeZfo05cMTVnaax/eMuesskNwnQDDf0JAtpY9IqlY/trbelyXPLHa3K89xA==",
       "type": "package",
       "path": "microsoft.identity.client/1.1.0-alpha0252",
       "files": [
@@ -15888,20 +15888,20 @@
     "UAP,Version=v10.0": []
   },
   "packageFolders": {
-    "C:\\Users\\vittorib\\.nuget\\packages\\": {}
+    "C:\\Users\\gsacavdm\\.nuget\\packages\\": {}
   },
   "project": {
     "restore": {
-      "projectUniqueName": "C:\\Users\\vittorib\\Documents\\GitHub\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient.UWP\\UserDetailsClient.UWP.csproj",
+      "projectUniqueName": "D:\\Code2\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient.UWP\\UserDetailsClient.UWP.csproj",
       "projectName": "UserDetailsClient.UWP",
-      "projectPath": "C:\\Users\\vittorib\\Documents\\GitHub\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient.UWP\\UserDetailsClient.UWP.csproj",
-      "projectJsonPath": "C:\\Users\\vittorib\\Documents\\GitHub\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient.UWP\\project.json",
+      "projectPath": "D:\\Code2\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient.UWP\\UserDetailsClient.UWP.csproj",
+      "projectJsonPath": "D:\\Code2\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient.UWP\\project.json",
       "projectStyle": "ProjectJson",
       "frameworks": {
         "uap10.0": {
           "projectReferences": {
-            "C:\\Users\\vittorib\\Documents\\GitHub\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient\\UserDetailsClient.csproj": {
-              "projectPath": "C:\\Users\\vittorib\\Documents\\GitHub\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient\\UserDetailsClient.csproj"
+            "D:\\Code2\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient\\UserDetailsClient.csproj": {
+              "projectPath": "D:\\Code2\\active-directory-xamarin-native-v2\\UserDetailsClient\\UserDetailsClient\\UserDetailsClient.csproj"
             }
           }
         }

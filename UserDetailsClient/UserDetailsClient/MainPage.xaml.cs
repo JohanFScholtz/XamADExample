@@ -27,7 +27,7 @@ namespace UserDetailsClient
                 if (App.PCA.Users.Count() > 0)
                 {
                     AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, App.PCA.Users.First());
-                    RefreshUserData(ar.AccessToken);
+                    UpdateUserInfo(ar.IdToken);
                     btnSignInSignOut.Text = "Sign out";
                 }
             }
@@ -43,8 +43,10 @@ namespace UserDetailsClient
             {
                 if (btnSignInSignOut.Text == "Sign in")
                 {
-                    AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.UiParent);
-                    RefreshUserData(ar.AccessToken);
+                    //TODO: Should be able to use this overload
+                    //AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.UiParent);
+                    AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.PCA.Users.FirstOrDefault(), UIBehavior.Consent, string.Empty, null, App.Authority, App.UiParent);
+                    UpdateUserInfo(ar.IdToken);
                     btnSignInSignOut.Text = "Sign out";
                 }
                 else
@@ -57,40 +59,50 @@ namespace UserDetailsClient
                     btnSignInSignOut.Text = "Sign in";
                 }
             }
-            catch(Exception ee)
+            catch(Exception ex)
             {
-
+                await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
             }
         }
+        public void UpdateUserInfo(string idToken)
+        {
+            /*
+            //TODO: Validate the token
+            // Extract user info from id_token
+            var jwt = JwtSecurityToken(idToken);   
+            slUser.IsVisible = true;
+            lblDisplayName.Text = jwt.Claims.FirstOrDefault("displayName")?.ToString();
+            lblGivenName.Text = jwt.Claims.FirstOrDefault("givenName")?.ToString();
+            lblId.Text = jwt.Claims.FirstOrDefault("id")?.ToString();               
+            lblSurname.Text = jwt.Claims.FirstOrDefault("surname")?.ToString();
+            lblUserPrincipalName.Text = jwt.Claims.FirstOrDefault("userPrincipalName")?.ToString();
+            */
 
-        public async void RefreshUserData(string token)
+        }
+        public async void CallApi(string authToken)
         {
             //get data from API
             HttpClient client = new HttpClient();
-            HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
-            message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", token);
+            HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Get, App.ApiEndpoint);
+            message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
             HttpResponseMessage response = await client.SendAsync(message);
             string responseString = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
-                JObject user = JObject.Parse(responseString);
+                await DisplayAlert($"Response from API {App.ApiEndpoint}", responseString, "Dismiss");
 
-                slUser.IsVisible = true;
-                lblDisplayName.Text = user["displayName"].ToString();
-                lblGivenName.Text = user["givenName"].ToString();
-                lblId.Text = user["id"].ToString();               
-                lblSurname.Text = user["surname"].ToString();
-                lblUserPrincipalName.Text = user["userPrincipalName"].ToString();
-
-                // just in case
-                btnSignInSignOut.Text = "Sign out";
-
-               
             }
             else
             {
-                DisplayAlert("Something went wrong with the API call", responseString, "Dismiss");
+                await DisplayAlert("Something went wrong with the API call", responseString, "Dismiss");
             }
+        }
+
+        async void EditProfile(object sender, EventArgs e)
+        {
+            // Call EditProfile PublicClientApp to invoke EditProfile UI
+            AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.PCA.Users.First(), UIBehavior.Consent, string.Empty, null, App.AuthorityEditProfile, App.UiParent);
+            UpdateUserInfo(ar.IdToken);
         }
     }
 
