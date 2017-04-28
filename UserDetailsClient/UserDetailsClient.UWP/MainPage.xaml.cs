@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Security.Authentication.Web;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -21,7 +22,9 @@ namespace UserDetailsClient.UWP
         {
             this.InitializeComponent();
 
-            LoadApplication(new UserDetailsClient.App());
+            var app = new UserDetailsClient.App();
+            //UserDetailsClient.App.PCA.RedirectUri = WebAuthenticationBroker.GetCurrentApplicationCallbackUri().ToString();
+            LoadApplication(app);
         }
     }
 }
