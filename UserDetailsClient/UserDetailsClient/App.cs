@@ -11,7 +11,7 @@ namespace UserDetailsClient
     public class App : Application
     {
         public static PublicClientApplication PCA = null;
-
+       
         // Azure AD B2C Coordinates
         public static string ClientID = "90c0fe63-bcf2-44d5-8fb7-b8bbc0b29dc6";
         public static string PolicySignUpSignIn = "b2c_1_susi";
@@ -23,12 +23,14 @@ namespace UserDetailsClient
 
         public static string[] Scopes = { "https://fabrikamb2c.onmicrosoft.com/demoapi/demo.read" };
         public static string ApiEndpoint = "https://aadb2cplayground.azurewebsites.net/api/Tasks";
-
-        /*
+ 
         // Azure AD v2 Coordinates
+        /*
         public static string ClientID = "a7d8cef0-4145-49b2-a91d-95c54051fa3f";
         public static string Authority = string.Empty;
+        public static string AuthorityEditProfile = string.Empty;
         public static string[] Scopes = { "User.Read" };
+        public static string ApiEndpoint = "https://graph.microsoft.com/v1.0/me";
         */
 
         public static string Username = string.Empty;
