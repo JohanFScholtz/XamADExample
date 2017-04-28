@@ -23,23 +23,23 @@ namespace UserDetailsClient
         {
             UpdateSignInState(false);
 
-            // let's see if we have a user in our belly already
+            // Check to see if we have a User
+            // in the cache already.
             try
             {
                 if (App.PCA.Users.Count() > 0)
                 {
-                    AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, App.PCA.Users.First());
+                    AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, App.PCA.Users.First(), App.Authority, false);
                     UpdateUserInfo(ar.IdToken);
                     UpdateSignInState(true);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // TODO: Only do this if exception is MSAL exception
-                // Ignore Cancels and ignore interaction required.
-                await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
+                // Uncomment for debugging purposes
+                // await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
 
-                // doesn't matter, we go in interactive more
+                // Doesn't matter, we go in interactive mode
                 UpdateSignInState(false);
             }
         }
@@ -66,13 +66,10 @@ namespace UserDetailsClient
             {
                 // Password reset
                 if (ex.Message.Contains("AADB2C90118"))
-                {
                     OnPasswordReset();
-                }
-                else
-                {
+                // Alert if any exception excludig user cancelling sign-in dialog
+                else if (((ex as MsalException)?.ErrorCode != "authentication_canceled"))
                     await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
-                }
             }
         }
         public void UpdateUserInfo(string idToken)
@@ -103,25 +100,32 @@ namespace UserDetailsClient
         }
         async void OnCallApi(object sender, EventArgs e)
         {
-            // TODO: Confirm if need to handle fail and call Interactive...
-            AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, App.PCA.Users.FirstOrDefault());
-            string token = ar.AccessToken;
-
-            // Get data from API
-            HttpClient client = new HttpClient();
-            HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Get, App.ApiEndpoint);
-            message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.SendAsync(message);
-            string responseString = await response.Content.ReadAsStringAsync();
-            if (response.IsSuccessStatusCode)
+            try
             {
-                // TODO: Switch to update UI rather than a popup
-                await DisplayAlert($"Response from API {App.ApiEndpoint}", responseString, "Dismiss");
+                // TODO: Confirm if need to handle fail and call Interactive...
+                AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, App.PCA.Users.FirstOrDefault(), App.Authority, false);
+                string token = ar.AccessToken;
 
+                // Get data from API
+                HttpClient client = new HttpClient();
+                HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Get, App.ApiEndpoint);
+                message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                HttpResponseMessage response = await client.SendAsync(message);
+                string responseString = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    // TODO: Switch to update UI rather than a popup
+                    await DisplayAlert($"Response from API {App.ApiEndpoint}", responseString, "Dismiss");
+
+                }
+                else
+                {
+                    await DisplayAlert("Something went wrong with the API call", responseString, "Dismiss");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await DisplayAlert("Something went wrong with the API call", responseString, "Dismiss");
+                await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
             }
         }
 
@@ -131,13 +135,14 @@ namespace UserDetailsClient
             {
                 // TODO: Figure out why
                 // 1. This is not doing SSO
-                // 2. This is crashing after completion of Edit Profile
                 AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, App.PCA.Users.FirstOrDefault(), UIBehavior.SelectAccount, string.Empty, null, App.AuthorityEditProfile, App.UiParent);
                 UpdateUserInfo(ar.IdToken);
             }
             catch (Exception ex)
             {
-                await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
+                // Alert if any exception excludig user cancelling sign-in dialog
+                if (((ex as MsalException)?.ErrorCode != "authentication_canceled"))
+                    await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
             }
         }
         async void OnPasswordReset()
@@ -151,7 +156,9 @@ namespace UserDetailsClient
             }
             catch (Exception ex)
             {
-                await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
+                // Alert if any exception excludig user cancelling sign-in dialog
+                if (((ex as MsalException)?.ErrorCode != "authentication_canceled"))
+                    await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
             }
         }
 
